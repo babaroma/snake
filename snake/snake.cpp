@@ -4,24 +4,24 @@
 #include <ctime>
 using namespace std;
 
+// Переменные состояния игры
+bool gameOver;       // Указывает на конец игры
+bool gameWon;        // Указывает на победу
+const int width = 30;  // Ширина игрового поля
+const int height = 20; // Высота игрового поля
+int x, y;             // Координаты головы змейки
+int fruitX, fruitY;   // Координаты фрукта
+int score;            // Количество очков
+int tailX[1000], tailY[1000]; // Координаты хвоста змейки
+int nTail;            // Длина хвоста змейки
+enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN }; // Направления движения змейки
+eDirection dir;       // Текущее направление движения змейки
+int difficulty;       // Переменная для уровня сложности
+time_t startTime;     // Время начала игры
+int gameCount = 0;    // Счетчик количества игр
+int pCount = 0;       // Счетчик нажатий на кнопку 'p'
 
-bool gameOver;
-bool gameWon;
-const int width = 30;
-const int height = 20;
-int x, y;
-int fruitX, fruitY;
-int score;
-int tailX[1000], tailY[1000];
-int nTail;
-enum eDirection { STOP = 0, LEFT, RIGHT, UP, DOWN };
-eDirection dir;
-int difficulty;
-time_t startTime;
-int gameCount = 0;
-int pCount = 0;
-
-
+// Функция для склонения слова секунда
 string getSeconds(int seconds) {
     if (seconds % 10 == 1 && seconds % 100 != 11) {
         return "секунда";
@@ -34,24 +34,24 @@ string getSeconds(int seconds) {
     }
 }
 
-
+// Настройки начала игры
 void Setup() {
     gameOver = false;
     gameWon = false;
     dir = STOP;
-    x = width / 2;
-    y = height / 2;
-    fruitX = rand() % width;
-    fruitY = rand() % height;
-    score = 0;
-    nTail = 0;
-    startTime = time(0);
-    pCount = 0;
+    x = width / 2;  // Начальные координаты головы змейки
+    y = height / 2; // Начальные координаты головы змейки
+    fruitX = rand() % width;  // Случайные координаты фрукта
+    fruitY = rand() % height; // Случайные координаты фрукта
+    score = 0;     // Сброс очков
+    nTail = 0;     // Сброс длины хвоста
+    startTime = time(0); // Запоминаем время начала игры
+    pCount = 0;    // Сбрасываем счетчик нажатий на 'p'
 }
 
-
+// Отрисовка поля
 void Draw() {
-    system("cls");
+    system("cls"); // Очистка экрана
     for (int i = 0; i < width + 2; i++)
         cout << "=";
     cout << endl;
@@ -59,16 +59,16 @@ void Draw() {
     for (int i = 0; i < height; i++) {
         for (int j = 0; j < width; j++) {
             if (j == 0)
-                cout << "|";
+                cout << "|"; // Левая граница
             if (i == y && j == x)
-                cout << "O";
+                cout << "O"; // Голова змейки
             else if (i == fruitY && j == fruitX)
-                cout << "*";
+                cout << "*"; // Фрукт
             else {
                 bool print = false;
                 for (int k = 0; k < nTail; k++) {
                     if (tailX[k] == j && tailY[k] == i) {
-                        cout << "o";
+                        cout << "o"; // Хвост змейки
                         print = true;
                     }
                 }
@@ -76,7 +76,7 @@ void Draw() {
             }
 
             if (j == width - 1)
-                cout << "|";
+                cout << "|"; // Правая граница
         }
         cout << endl;
     }
@@ -85,7 +85,7 @@ void Draw() {
         cout << "=";
     cout << endl;
 
-
+    // Вычисляем и отображаем время игры
     time_t currentTime = time(0);
     int Time = difftime(currentTime, startTime);
 
@@ -95,40 +95,40 @@ void Draw() {
     cout << "Нажмите 'x' для выхода" << endl;
 }
 
-
+// Обработка ввода пользователя
 void Input() {
-    if (_kbhit()) {
+    if (_kbhit()) { // Проверка, была ли нажата клавиша
         switch (_getch()) {
         case 'a':
-            dir = LEFT;
+            dir = LEFT; // Движение влево
             break;
         case 'd':
-            dir = RIGHT;
+            dir = RIGHT; // Движение вправо
             break;
         case 'w':
-            dir = UP;
+            dir = UP; // Движение вверх
             break;
         case 's':
-            dir = DOWN;
+            dir = DOWN; // Движение вниз
             break;
         case 'x':
-            gameOver = true;
+            gameOver = true; // Завершение игры
             break;
         case 'p':
-            pCount++;
+            pCount++; // Увеличиваем счетчик нажатий на 'p'
             if (pCount == 3) {
-                gameWon = true;
+                gameWon = true; // Автоматическая победа
                 gameOver = true;
             }
             break;
         default:
-            pCount = 0;
+            pCount = 0; // Сбрасываем счетчик нажатий на 'p' при любом другом нажатии
             break;
         }
     }
 }
 
-
+// Логика игры
 void Logic() {
     int prevX = tailX[0];
     int prevY = tailY[0];
@@ -145,24 +145,24 @@ void Logic() {
     }
     switch (dir) {
     case LEFT:
-        x--;
+        x--; // Движение влево
         break;
     case RIGHT:
-        x++;
+        x++; // Движение вправо
         break;
     case UP:
-        y--;
+        y--; // Движение вверх
         break;
     case DOWN:
-        y++;
+        y++; // Движение вниз
         break;
     default:
         break;
     }
 
-    if (difficulty == 3) {
+    if (difficulty == 3) { // Проверка на сложном уровне
         if (x >= width || x < 0 || y >= height || y < 0) {
-            gameOver = true;
+            gameOver = true; // Столкновение с границей
         }
     }
     else {
@@ -175,23 +175,23 @@ void Logic() {
 
     for (int i = 0; i < nTail; i++)
         if (tailX[i] == x && tailY[i] == y)
-            gameOver = true;
+            gameOver = true; // Столкновение с хвостом
 
     if (x == fruitX && y == fruitY) {
-        score += 10;
-        fruitX = rand() % width;
-        fruitY = rand() % height;
-        nTail++;
+        score += 10; // Увеличение очков
+        fruitX = rand() % width; // Новые координаты фрукта
+        fruitY = rand() % height; // Новые координаты фрукта
+        nTail++; // Увеличение длины хвоста
     }
 
-
+    // Проверка на победу
     if (nTail == width * height - 1) {
         gameWon = true;
         gameOver = true;
     }
 }
 
-
+// Окончание игры
 void ShowGameOver() {
     system("cls");
     time_t currentTime = time(0);
@@ -221,7 +221,7 @@ int main() {
     setlocale(0, "");
 
     do {
-
+        // Выбор уровня сложности
         do {
             cout << "Выберите уровень сложности\n 1 - Легкий\n 2 - Средний\n 3 - Сложный\n";
             cin >> difficulty;
@@ -233,26 +233,26 @@ int main() {
 
         int sleepTime;
         switch (difficulty) {
-        case 1: sleepTime = 100; break;
-        case 2: sleepTime = 65; break;
-        case 3: sleepTime = 25; break;
+        case 1: sleepTime = 100; break; // легкий
+        case 2: sleepTime = 65; break;  // средний
+        case 3: sleepTime = 25; break;  // сложный
         }
 
-        gameCount++;
-        Setup();
+        gameCount++; // Увеличение счетчика игр
+        Setup(); // Настройка начальных параметров
         while (!gameOver) {
-            Draw();
-            Input();
-            Logic();
-            Sleep(sleepTime);
+            Draw(); // Отрисовка игрового поля
+            Input(); // Обработка ввода пользователя
+            Logic(); // Логика игры
+            Sleep(sleepTime); // Задержка
         }
-        ShowGameOver();
+        ShowGameOver(); // Отображение экрана окончания игры
 
         char choice;
         do {
             choice = _getch();
             if (choice == 'x') {
-                return 0;
+                return 0; // Выход из игры
             }
         } while (choice != 'r');
 
